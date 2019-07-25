@@ -16,6 +16,8 @@ package org.opencps.auth.filter;
 
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManagerUtil;
@@ -62,7 +64,7 @@ public class RestAuthFilter implements Filter {
 	public final static String P_AUTH = "Token";
 	public final static String USER_ID = "USER_ID";
 	public final static String AUTHORIZATION = "Authorization";
-	public final static String[] IGNORE_PATTERN = new String[] { "/o/rest/v2/serviceinfos/\\w+/filetemplates/\\w+", "/o/rest/v2/barcode", "/o/rest/v2/qrcode", "/o/rest/v2/postal/votings/statistic", "/o/rest/v2/postal/invoice", "/o/rest/v2/dictcollections/GOVERNMENT_AGENCY/dictitems", "/o/rest/v2/dictcollections/SERVICE_DOMAIN/dictitems", "/o/rest/v2/dossiers", "/o/rest/v2/serviceinfos", "/o/rest/statistics/reports" };
+	protected final static String[] IGNORE_PATTERN = new String[] { "/o/rest/v2/serviceinfos/\\w+/filetemplates/\\w+", "/o/rest/v2/barcode", "/o/rest/v2/qrcode", "/o/rest/v2/postal/votings/statistic", "/o/rest/v2/postal/invoice", "/o/rest/v2/dictcollections/GOVERNMENT_AGENCY/dictitems", "/o/rest/v2/dictcollections/SERVICE_DOMAIN/dictitems", "/o/rest/v2/dossiers", "/o/rest/v2/serviceinfos", "/o/rest/statistics/reports" };
 	public final static String OPENCPS_GZIP_FILTER = "org.opencps.servlet.filters.GZipFilter";
 	public final static String LIFERAY_GZIP_FILTER = "com.liferay.portal.servlet.filters.gzip.GZipFilter";
 	
@@ -87,7 +89,7 @@ public class RestAuthFilter implements Filter {
 			pAuth = httpRequest.getParameter("Token");
 		}
 		String ipAddress = HttpUtil.getIpAddress(httpRequest);
-		boolean checkLocal = (ipAddress.equals("localhost") || ipAddress.equals("127.0.0.1"));
+		boolean checkLocal = ("localhost".equals(ipAddress) || "127.0.0.1".equals(ipAddress));
 		
 		if (checkLocal || exclude || AuthTokenUtil.getToken(httpRequest).equals(pAuth) || (Validator.isNotNull(httpRequest.getHeader("localaccess")) ? httpRequest.getHeader("localaccess").equals(pAuth) : false) ) {
 			Object userObj = httpRequest.getSession(true).getAttribute(USER_ID);
@@ -140,6 +142,7 @@ public class RestAuthFilter implements Filter {
 					authOK(servletRequest, servletResponse, filterChain, userId);
 					
 				} catch (PortalException e) {
+					_log.debug(e);
 					authFailure(servletResponse);
 				}
 
@@ -154,37 +157,38 @@ public class RestAuthFilter implements Filter {
 	private void authOK(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain, long userId)
 			throws IOException, ServletException {
 		servletRequest.setAttribute(USER_ID, userId);
-	    HttpServletRequest  httpRequest  = (HttpServletRequest)  servletRequest;
+//	    HttpServletRequest  httpRequest  = (HttpServletRequest)  servletRequest;
 	    HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-	    String gzipFilterProperty = PropsUtil.get(OPENCPS_GZIP_FILTER);
-	    String liferayGzipProperty = PropsUtil.get(LIFERAY_GZIP_FILTER);
-	    
-	    boolean gzipFilterEnable = Validator.isNotNull(gzipFilterProperty) ? Boolean.parseBoolean(PropsUtil.get(OPENCPS_GZIP_FILTER)) : false;
-	    if (Validator.isNotNull(liferayGzipProperty) && Boolean.parseBoolean(liferayGzipProperty)) {
-	    	gzipFilterEnable = false;
-	    }
-	    gzipFilterEnable = false;
-	    if (gzipFilterEnable) {
-		    if ( acceptsGZipEncoding(httpRequest)) {
-		    	if (!httpResponse.containsHeader("Content-Encoding")
-		    		|| httpResponse.getHeader("Content-Encoding").indexOf("gzip") == -1) {
-		    		httpResponse.addHeader("Content-Encoding", "gzip");
-		    		httpResponse.setCharacterEncoding("UTF-8");
-			        GZipServletResponseWrapper gzipResponse =
-			        		new GZipServletResponseWrapper(httpResponse);
-			        filterChain.doFilter(servletRequest, gzipResponse);
-			        gzipResponse.close();
-		    	}
-		    	else {
-		    		filterChain.doFilter(servletRequest, httpResponse);
-		    	}
-		    } else {
-		    	filterChain.doFilter(servletRequest, httpResponse);
-		    }
-	    }
-	    else {
-	    	filterChain.doFilter(servletRequest, httpResponse);
-	    }
+//	    String gzipFilterProperty = PropsUtil.get(OPENCPS_GZIP_FILTER);
+//	    String liferayGzipProperty = PropsUtil.get(LIFERAY_GZIP_FILTER);
+//	    
+//	    boolean gzipFilterEnable = Validator.isNotNull(gzipFilterProperty) ? Boolean.parseBoolean(PropsUtil.get(OPENCPS_GZIP_FILTER)) : false;
+//	    if (Validator.isNotNull(liferayGzipProperty) && Boolean.parseBoolean(liferayGzipProperty)) {
+//	    	gzipFilterEnable = false;
+//	    }
+//	    gzipFilterEnable = false;
+//	    if (gzipFilterEnable) {
+//		    if ( acceptsGZipEncoding(httpRequest)) {
+//		    	if (!httpResponse.containsHeader("Content-Encoding")
+//		    		|| httpResponse.getHeader("Content-Encoding").indexOf("gzip") == -1) {
+//		    		httpResponse.addHeader("Content-Encoding", "gzip");
+//		    		httpResponse.setCharacterEncoding("UTF-8");
+//			        GZipServletResponseWrapper gzipResponse =
+//			        		new GZipServletResponseWrapper(httpResponse);
+//			        filterChain.doFilter(servletRequest, gzipResponse);
+//			        gzipResponse.close();
+//		    	}
+//		    	else {
+//		    		filterChain.doFilter(servletRequest, httpResponse);
+//		    	}
+//		    } else {
+//		    	filterChain.doFilter(servletRequest, httpResponse);
+//		    }
+//	    }
+//	    else {
+//	    	filterChain.doFilter(servletRequest, httpResponse);
+//	    }
+	    filterChain.doFilter(servletRequest, httpResponse);
 	}
 
 	private void authFailure(ServletResponse servletResponse) throws IOException {
@@ -213,5 +217,7 @@ public class RestAuthFilter implements Filter {
 
 	    return acceptEncoding != null && 
 	             acceptEncoding.indexOf("gzip") != -1;
-	}	
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(RestAuthFilter.class);
 }
