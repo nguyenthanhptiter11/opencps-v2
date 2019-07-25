@@ -7,6 +7,9 @@
 
 package ws.bulkSms.impl;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 public class CcApi_ServiceLocator extends org.apache.axis.client.Service implements ws.bulkSms.impl.CcApi_Service {
 
     public CcApi_ServiceLocator() {
@@ -57,6 +60,7 @@ public class CcApi_ServiceLocator extends org.apache.axis.client.Service impleme
             return _stub;
         }
         catch (org.apache.axis.AxisFault e) {
+        	_log.debug(e);
             return null;
         }
     }
@@ -138,5 +142,7 @@ if ("CcApiPort".equals(portName)) {
     public void setEndpointAddress(javax.xml.namespace.QName portName, java.lang.String address) throws javax.xml.rpc.ServiceException {
         setEndpointAddress(portName.getLocalPart(), address);
     }
+    
+    private static Log _log = LogFactoryUtil.getLog(CcApi_ServiceLocator.class);
 
 }

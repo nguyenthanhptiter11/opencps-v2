@@ -363,7 +363,7 @@ public class NotificationUtil {
 			}
 		}
 		catch (Exception e) {
-
+			_log.debug(e);
 			// TODO: not send zalo
 		}
 		return sendZaloInfo;
@@ -411,6 +411,7 @@ public class NotificationUtil {
 			zaloInfoConfig = JSONFactoryUtil.createJSONObject(sc.getConfigs());
 		}
 		catch (Exception e) {
+			_log.debug(e);
 			// TODO: handle exception
 		}
 

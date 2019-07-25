@@ -1,5 +1,8 @@
 package ws.bulkSms.impl;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 public class CcApiProxy implements ws.bulkSms.impl.CcApi_PortType {
   private String _endpoint = null;
   private ws.bulkSms.impl.CcApi_PortType ccApi_PortType = null;
@@ -24,7 +27,9 @@ public class CcApiProxy implements ws.bulkSms.impl.CcApi_PortType {
       }
       
     }
-    catch (javax.xml.rpc.ServiceException serviceException) {}
+    catch (javax.xml.rpc.ServiceException serviceException) {
+    	_log.debug(serviceException);
+    }
   }
   
   public String getEndpoint() {
@@ -116,5 +121,5 @@ public class CcApiProxy implements ws.bulkSms.impl.CcApi_PortType {
     return ccApi_PortType.wsEcomCpMt(user, password, CPCode, requestID, userID, receiverID, serviceID, commandCode, content, contentType, saleOrderId, packageId, orderNum);
   }
   
-  
+  private static Log _log = LogFactoryUtil.getLog(CcApiProxy.class);
 }
