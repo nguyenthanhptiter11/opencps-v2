@@ -147,6 +147,7 @@ public class RestAuthFilter implements Filter {
 					authOK(servletRequest, servletResponse, filterChain, userId);
 					
 				} catch (PortalException e) {
+					_log.debug(e);
 					authFailure(servletResponse);
 				}
 
@@ -164,33 +165,34 @@ public class RestAuthFilter implements Filter {
 //		response.addHeader("Access-Control-Allow-Origin", "*");
 //		response.addHeader("Access-Control-Allow-Headers", "*");
 //		response.addHeader("Access-Control-Allow-Methods", "DELETE,POST,GET,PUT,HEAD");
-	    HttpServletRequest  httpRequest  = (HttpServletRequest)  servletRequest;
+//	    HttpServletRequest  httpRequest  = (HttpServletRequest)  servletRequest;
 	    HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
-	    String gzipFilterProperty = PropsUtil.get(OPENCPS_GZIP_FILTER);
-	    boolean gzipFilterEnable = Validator.isNotNull(gzipFilterProperty) ? Boolean.parseBoolean(PropsUtil.get(OPENCPS_GZIP_FILTER)) : false;
-	    gzipFilterEnable = false;
-	    if (gzipFilterEnable) {
-		    if ( acceptsGZipEncoding(httpRequest) 
-		    		&& !httpRequest.getRequestURI().equals("/o/v1/opencps/login")) {
-		    	if (!httpResponse.containsHeader("Content-Encoding")
-		    		|| httpResponse.getHeader("Content-Encoding").indexOf("gzip") == -1) {
-		    		httpResponse.addHeader("Content-Encoding", "gzip");
-		    		httpResponse.setCharacterEncoding("UTF-8");
-			        GZipServletResponseWrapper gzipResponse =
-			        		new GZipServletResponseWrapper(httpResponse);
-			        filterChain.doFilter(servletRequest, gzipResponse);
-			        gzipResponse.close();
-		    	}
-		    	else {
-		    		filterChain.doFilter(servletRequest, httpResponse);
-		    	}
-		    } else {
-		    	filterChain.doFilter(servletRequest, httpResponse);
-		    }
-	    }
-	    else {
-	    	filterChain.doFilter(servletRequest, httpResponse);
-	    }
+//	    String gzipFilterProperty = PropsUtil.get(OPENCPS_GZIP_FILTER);
+//	    boolean gzipFilterEnable = Validator.isNotNull(gzipFilterProperty) ? Boolean.parseBoolean(PropsUtil.get(OPENCPS_GZIP_FILTER)) : false;
+//	    gzipFilterEnable = false;
+//	    if (gzipFilterEnable) {
+//		    if ( acceptsGZipEncoding(httpRequest) 
+//		    		&& !"/o/v1/opencps/login".equals(httpRequest.getRequestURI())) {
+//		    	if (!httpResponse.containsHeader("Content-Encoding")
+//		    		|| httpResponse.getHeader("Content-Encoding").indexOf("gzip") == -1) {
+//		    		httpResponse.addHeader("Content-Encoding", "gzip");
+//		    		httpResponse.setCharacterEncoding("UTF-8");
+//			        GZipServletResponseWrapper gzipResponse =
+//			        		new GZipServletResponseWrapper(httpResponse);
+//			        filterChain.doFilter(servletRequest, gzipResponse);
+//			        gzipResponse.close();
+//		    	}
+//		    	else {
+//		    		filterChain.doFilter(servletRequest, httpResponse);
+//		    	}
+//		    } else {
+//		    	filterChain.doFilter(servletRequest, httpResponse);
+//		    }
+//	    }
+//	    else {
+//	    	filterChain.doFilter(servletRequest, httpResponse);
+//	    }
+	    filterChain.doFilter(servletRequest, httpResponse);
 	}
 
 	private void authFailure(ServletResponse servletResponse) throws IOException {
