@@ -287,24 +287,10 @@ public class UserActions implements UserInterface {
 				result = jsonObject.getString(key);
 			}
 
-			_log.info(id + " " + groupId + " " + key + " DETAIL IMPL" + result);
-			_log.info(
-				"========================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-			_log.info(
-				"========================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-			_log.info(
-				"========================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+			_log.info(preferences);
 		}
 		catch (Exception e) {
-			_log.info(id + " " + groupId + " " + key + " DETAIL IMPL ERR");
-			_log.info(
-				"========================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-			_log.info(
-				"========================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-			_log.info(
-				"========================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-			_log.debug(e);
-			// _log.error(e);
+			_log.error(e);
 		}
 
 		return result;
@@ -769,14 +755,13 @@ public class UserActions implements UserInterface {
 					}
 
 					Date now = new Date();
-			        Calendar cal = Calendar.getInstance();
-			        cal.setTime(now);
-			        
-			        Notificationtemplate notiTemplate = NotificationtemplateLocalServiceUtil.fetchByF_NotificationtemplateByType(groupId, Constants.USER_04);
-			        cal.add(Calendar.MINUTE, 10);
-			        Date expired = cal.getTime();
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(now);
 					
-			        if (notiTemplate != null) {
+					Notificationtemplate notiTemplate = NotificationtemplateLocalServiceUtil.fetchByF_NotificationtemplateByType(groupId, Constants.USER_04);
+					cal.add(Calendar.MINUTE, 10);
+					
+					if (notiTemplate != null) {
 						if ("minutely".equals(notiTemplate.getInterval())) {
 							cal.add(Calendar.MINUTE, notiTemplate.getExpireDuration());
 						} else if ("hourly".equals(notiTemplate.getInterval())) {
@@ -786,8 +771,8 @@ public class UserActions implements UserInterface {
 						}
 					}
 					
-			        expired = cal.getTime();
-			        
+					Date expired = cal.getTime();
+
 					JSONObject payLoad = JSONFactoryUtil.createJSONObject();
 					// _log.info("user.getScreenName():
 					// "+user.getScreenName()+"|user.getEmailAddress():
@@ -862,25 +847,24 @@ public class UserActions implements UserInterface {
 				payLoad.put("PASSWORD", newPassword);
 
 				Date now = new Date();
-		        Calendar cal = Calendar.getInstance();
-		        cal.setTime(now);
-		        
-		        Notificationtemplate notiTemplate = NotificationtemplateLocalServiceUtil.fetchByF_NotificationtemplateByType(groupId, Constants.USER_04);
-		        cal.add(Calendar.MINUTE, 10);
-		        Date expired = cal.getTime();
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(now);
 				
-		        if (notiTemplate != null) {
+				Notificationtemplate notiTemplate = NotificationtemplateLocalServiceUtil.fetchByF_NotificationtemplateByType(groupId, Constants.USER_04);
+				cal.add(Calendar.MINUTE, 10);
+				
+				if (notiTemplate != null) {
 					if ("minutely".equals(notiTemplate.getInterval())) {
-						cal.add(Calendar.MINUTE, notiTemplate.getExpireDuration());
-					} else if ("hourly".equals(notiTemplate.getInterval())) {
+					cal.add(Calendar.MINUTE, notiTemplate.getExpireDuration());
+				} else if ("hourly".equals(notiTemplate.getInterval())) {
 						cal.add(Calendar.HOUR, notiTemplate.getExpireDuration());
 					} else {
 						cal.add(Calendar.MINUTE, notiTemplate.getExpireDuration());
 					}
 				}
 				
-		        expired = cal.getTime();
-		        
+				Date expired = cal.getTime();
+
 				// _log.info("STRAT addNotificationQueue: ");
 				NotificationQueueLocalServiceUtil.addNotificationQueue(
 					user.getUserId(), groupId, Constants.USER_04,
