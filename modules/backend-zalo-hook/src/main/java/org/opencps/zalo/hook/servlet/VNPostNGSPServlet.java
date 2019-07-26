@@ -1,3 +1,4 @@
+
 package org.opencps.zalo.hook.servlet;
 
 import java.io.IOException;
@@ -48,7 +49,8 @@ public class VNPostNGSPServlet extends HttpServlet {
 
 		if (_log.isInfoEnabled()) {
 			_log.info("VNPostNGSPServlet init success");
-		} else {
+		}
+		else {
 			System.out.println("VNPostNGSPServlet init success sys");
 		}
 
@@ -62,7 +64,8 @@ public class VNPostNGSPServlet extends HttpServlet {
 
 		if (_log.isInfoEnabled()) {
 			_log.info("VNPostNGSPServlet doGet");
-		} else {
+		}
+		else {
 			System.out.println("VNPostNGSPServlet doGet sys");
 		}
 
@@ -74,9 +77,7 @@ public class VNPostNGSPServlet extends HttpServlet {
 				modelMap.put(
 					parameterName, request.getParameter(parameterName));
 				_log.info(
-					parameterName +
-						"=" +
-						request.getParameter(parameterName));
+					parameterName + "=" + request.getParameter(parameterName));
 			}
 			String tokenUrl = request.getParameter("tokenUrl");
 			String consumer_key = request.getParameter("consumer_key");
@@ -98,15 +99,22 @@ public class VNPostNGSPServlet extends HttpServlet {
 
 		if (_log.isInfoEnabled()) {
 			_log.info("VNPostNGSPServlet doPost");
-		} else {
+		}
+		else {
 			System.out.println("VNPostNGSPServlet doPost sys");
 		}
-
-		doGet(request, response);
+		try {
+			doGet(request, response);
+		}
+		catch (Exception e) {
+			_log.error(e);
+		}
 
 	}
-	
-	public static void getToken(String tokenUrl, String consumer_key, String secret_key) throws Exception {
+
+	public static void getToken(
+		String tokenUrl, String consumer_key, String secret_key)
+		throws Exception {
 
 		MToken token = IToken.getToken(tokenUrl, consumer_key, secret_key);
 
