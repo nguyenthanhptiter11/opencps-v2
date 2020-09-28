@@ -67,6 +67,20 @@ public interface SMSManagement {
 		@Context Company company, @Context Locale locale, @Context User user,
 		@Context ServiceContext serviceContext,
 		@BeanParam IPacificSearchSMS query);
+	
+	@GET
+	@Path("/inetdvc")
+	@Consumes({
+		MediaType.APPLICATION_FORM_URLENCODED
+	})
+	@Produces({
+		MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON
+	})
+	public Response getInetSMSDVC(
+		@Context HttpServletRequest request, @Context HttpHeaders header,
+		@Context Company company, @Context Locale locale, @Context User user,
+		@Context ServiceContext serviceContext,
+		@BeanParam IPacificSearchSMS query);
 
 	@GET
 	@Path("/zaloid")

@@ -93,12 +93,38 @@ public class SMSManagementImpl implements SMSManagement {
 		_log.info("===============" + input.getServiceNumber());
 		_log.info("===============" + input.getUser());
 		
-		JSONObject formDataKey = JSONFactoryUtil.createJSONObject();
-		formDataKey.put("bac", 1);
-		formDataKey.put("baB", "shkdshd");
-		buildDeliverableSearchDataForm(formDataKey.toJSONString());
+//		JSONObject formDataKey = JSONFactoryUtil.createJSONObject();
+//		formDataKey.put("bac", 1);
+//		formDataKey.put("baB", "shkdshd");
+//		buildDeliverableSearchDataForm(formDataKey.toJSONString());
 
 		return Response.status(200).entity(_buiderResponseSMS(input)).build();
+	}
+
+	@Override
+	public Response getInetSMSDVC(
+		HttpServletRequest request, HttpHeaders header, Company company,
+		Locale locale, User user, ServiceContext serviceContext,
+		IPacificSearchSMS input) {
+
+		// Bgtvt mshs mtc -> 8085
+		// ====GET=====input.getCommandCode()=======BGTVT
+		// ====GET=====input.getInfo()==============Bgtvt mshs mtc
+		// ============input.getPassword()==========Gt.sms@201620182019
+		// ============input.getServiceNumber()=====8085
+		// ============input.getUser()==============gtsms2019
+		// ============input.getUserId()============84978266524
+
+		_log.info("===============" + input.getPassword());
+		_log.info("===============" + input.getServiceNumber());
+		_log.info("===============" + input.getUser());
+		
+//		JSONObject formDataKey = JSONFactoryUtil.createJSONObject();
+//		formDataKey.put("bac", 1);
+//		formDataKey.put("baB", "shkdshd");
+//		buildDeliverableSearchDataForm(formDataKey.toJSONString());
+
+		return Response.status(200).entity(_buiderResponseSMSDVC(input)).build();
 	}
 
 	@Override
@@ -127,7 +153,7 @@ public class SMSManagementImpl implements SMSManagement {
 
 	}
 
-	private String _buiderResponseSMS(IPacificSearchSMS iPacific) {
+	private String _buiderResponseSMSDVC(IPacificSearchSMS iPacific) {
 
 		// contentType;messageType;info;[mobile]
 		// contentType: Loại nội dung trả về.
@@ -226,6 +252,112 @@ public class SMSManagementImpl implements SMSManagement {
 		}
 		catch (Exception e) {
 			_log.debug(e);
+			result = "0;72;He thong chua cau hinh;";
+		}
+
+		_log.info(result);
+		return result;
+	}
+
+	private String _buiderResponseSMS(IPacificSearchSMS iPacific) {
+
+		// contentType;messageType;info;[mobile]
+		// contentType: Loại nội dung trả về.
+		// 0:Text
+		// 2:Logo
+		// 8:wappush
+		// MessageType:Bản tin có hợp lệ không->Có tính tiền được không
+		// 71:Valid->Tính tiền
+		// 72:Invalid->Hoàn cước cho khách hàng
+		// info:Nội dung trả về.
+		// mobile:Số điện thoại khách hàng nhận tin nhắn
+		// "0;72;HE THONG XIN THONG BAO\n BAN KHONG THE NHAN TIN NHAN;|0;0;Nhan
+		// den ban b;0362219930"
+
+		String result = "0;72;He thong chua cau hinh;";
+		JSONObject epacifConfig = JSONFactoryUtil.createJSONObject();
+		try {
+
+			ServerConfig sc = ServerConfigLocalServiceUtil.getByCode(
+				SendSMSTerm.SERVER_CONFIG_SERVERNO_EPACIFIC);
+			epacifConfig = JSONFactoryUtil.createJSONObject(sc.getConfigs());
+			Dossier dossier = null;
+
+			if (
+				epacifConfig.has(SendSMSTerm.EPACIFIC_MINE) &&
+				epacifConfig.has(SendSMSTerm.EPACIFIC_USER) &&
+				epacifConfig.has(SendSMSTerm.EPACIFIC_PASSWORD)) {
+
+				String[] strArr = iPacific.getInfo().split(" ");
+				String dossierNo = strArr[1];
+				String secretCode = strArr[2];
+
+				dossier = DossierLocalServiceUtil.fetchByDO_NO(dossierNo);
+
+				if (!epacifConfig.getString(
+					SendSMSTerm.EPACIFIC_MINE).equalsIgnoreCase(
+						iPacific.getCommandCode())) {
+
+					result = epacifConfig.getString(
+						SendSMSTerm.EPACIFIC_MINE_ERROR_MES);
+
+				}
+				else if (!epacifConfig.getString(
+					SendSMSTerm.EPACIFIC_USER).equalsIgnoreCase(
+						iPacific.getUser())) {
+
+					result = epacifConfig.getString(
+						SendSMSTerm.EPACIFIC_USER_ERROR_MES);
+
+				}
+				else if (!epacifConfig.getString(
+					SendSMSTerm.EPACIFIC_PASSWORD).equalsIgnoreCase(
+						iPacific.getPassword())) {
+
+					result = epacifConfig.getString(
+						SendSMSTerm.EPACIFIC_PASSWORD_ERROR_MES);
+
+				}
+				else if (Validator.isNull(dossier)) {
+
+					result = epacifConfig.getString(
+						SendSMSTerm.EPACIFIC_D_NOT_FOUND_MES);
+
+				}
+				else if (!dossier.getPassword().equalsIgnoreCase(secretCode)) {
+
+					result = epacifConfig.getString(
+						SendSMSTerm.EPACIFIC_D_PASSWORD_ERROR_MES);
+
+				}
+				else {
+
+					result = epacifConfig.getString(
+						SendSMSTerm.EPACIFIC_SUCCESS_MES);
+					result = result.replaceAll(
+						epacifConfig.getString(
+							SendSMSTerm.EPACIFIC_DOSSIER_NO_REPLACE),
+						dossierNo);
+					result = result.replaceAll(
+						epacifConfig.getString(
+							SendSMSTerm.EPACIFIC_DOSSIER_STATUS_REPLACE),
+						_removeAccent(dossier.getDossierStatusText()));
+				}
+			}
+			else {
+				_log.debug("====inet=== chua cau hinh");
+				result = "0;72;He thong chua cau hinh.;";
+			}
+		}
+		catch (ArrayIndexOutOfBoundsException e) {
+			_log.debug(e);
+			_log.debug("====inet=== arr ex");
+			result =
+				epacifConfig.getString(SendSMSTerm.EPACIFIC_SYNTAX_ERROR_MES);
+		}
+		catch (Exception e) {
+			_log.debug(e);
+			_log.debug("====inet=== ex");
 			result = "0;72;He thong chua cau hinh;";
 		}
 
